@@ -70,7 +70,7 @@ XOR (исключающее ИЛИ) — это побитовая операци
 
 Компилятор:
 - C++17
-- Clang / GCC / AppleClang
+- Clang / GCC / AppleClang / MinGW
 
 Библиотеки:
 - Qt6 (модуль Widgets)
