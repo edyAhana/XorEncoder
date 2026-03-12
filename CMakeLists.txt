@@ -4,7 +4,9 @@ project(encoder)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_AUTOMOC ON)
 
-set(CMAKE_PREFIX_PATH "$ENV{HOME}/Qt/6.10.2/macos/lib/cmake/Qt6")
+#set(CMAKE_PREFIX_PATH "$ENV{HOME}/Qt/6.10.2/macos/")
+set(CMAKE_PREFIX_PATH "C:/Qt/6.10.2/mingw_64")
+
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
