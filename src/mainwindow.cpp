@@ -30,6 +30,19 @@ MainWindow::MainWindow()
     progress_bar = new QProgressBar;
     status_label = new QLabel("Ready");
 
+    delete_checkbox = new QCheckBox("Delete input files");
+
+    timer_checkbox = new QCheckBox("Timer mode");
+
+    interval_spin = new QSpinBox;
+    interval_spin->setRange(1, 3600);
+    interval_spin->setValue(5);
+    interval_spin->setSuffix(" sec");
+
+    action_combo = new QComboBox;
+    action_combo->addItem("Overwrite");
+    action_combo->addItem("Add counter");
+
     layout->addWidget(input_path_edit);
     layout->addWidget(output_path_edit);
     layout->addWidget(mask_edit);
@@ -37,6 +50,10 @@ MainWindow::MainWindow()
     layout->addWidget(start_button);
     layout->addWidget(progress_bar);
     layout->addWidget(status_label);
+    layout->addWidget(delete_checkbox);
+    layout->addWidget(timer_checkbox);
+    layout->addWidget(interval_spin);
+    layout->addWidget(action_combo);
 
     w->setLayout(layout);
 
@@ -50,8 +67,16 @@ void MainWindow::start_process()
     settings.output_path = output_path_edit->text();
     settings.file_mask = mask_edit->text();
     settings.key = xor_edit->text().toULongLong();
-    settings.delete_input = false;
-    settings.action = AppSettings::FileAction::Overwrite;
+
+    settings.delete_input = delete_checkbox->isChecked();
+
+    settings.timer_mode = timer_checkbox->isChecked();
+    settings.scaner_interval = interval_spin->value();
+
+    if (action_combo->currentIndex() == 0)
+        settings.action = AppSettings::FileAction::Overwrite;
+    else
+        settings.action = AppSettings::FileAction::AddCounter;
 
     thread = new QThread;
 
@@ -72,6 +97,7 @@ void MainWindow::start_process()
 
     thread->start();
 }
+
 
 void MainWindow::update_progress(int p)
 {

@@ -1,24 +1,32 @@
-#ifndef XORENCODER_TASK_HPP
-#define XORENCODER_TASK_HPP
+#ifndef TASK_HPP
+#define TASK_HPP
 
 #include <QObject>
+#include <QTimer>
 
 #include "AppSettings.hpp"
 
-class Task : public QObject {
+class Task : public QObject
+{
     Q_OBJECT
-private:
-    AppSettings settings;
-    QString generate_output_name(QString name);
+
 public:
-    Task(AppSettings settings);
+    Task(const AppSettings& settings);
+
 public slots:
     void process();
-signals:
-    void progress(int);
+
+    signals:
+        void progress(int);
     void status(QString);
     void finished();
+
+private:
+    void run_once();
+    QString resolve_output(const QString& input);
+
+    AppSettings settings;
+    QTimer* timer;
 };
 
-
-#endif //XORENCODER_TASK_HPP
+#endif

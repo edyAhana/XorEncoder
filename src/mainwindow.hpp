@@ -4,6 +4,9 @@
 #include <QMainWindow>
 #include <QThread>
 #include <QTimer>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QSpinBox>
 
 #include "AppSettings.hpp"
 #include "Task.hpp"
@@ -35,6 +38,12 @@ private:
     QLineEdit *output_path_edit;
     QLineEdit *xor_edit;
 
+    QCheckBox *delete_checkbox;
+    QCheckBox *timer_checkbox;
+
+    QComboBox *action_combo;
+
+    QSpinBox *interval_spin;
     QPushButton *start_button;
 
     QProgressBar *progress_bar;

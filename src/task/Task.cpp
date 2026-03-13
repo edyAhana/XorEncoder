@@ -1,60 +1,83 @@
-#include <QFile>
-#include <QFileInfo>
-
 #include "Task.hpp"
 #include "FileScanner.hpp"
 #include "FileEncoder.hpp"
 
-Task::Task(AppSettings settings) : settings(settings) {}
+#include <QFileInfo>
+#include <QDir>
+#include <QFile>
+#include <QDebug>
 
-QString Task::generate_output_name(QString name) {
-    QString output_name = settings.output_path + "/" + name;
-
-    if (settings.action == AppSettings::FileAction::Overwrite) {
-        return output_name;
-    }
-
-    std::size_t cnt = 0;
-    QString base = output_name;
-
-    while (QFile::exists(output_name)) {
-        output_name = base + "_" + QString::number(cnt++);
-    }
-
-    return output_name;
-}
+Task::Task(const AppSettings& s)
+    : settings(s) {}
 
 void Task::process() {
-    emit status("Scanning files...");
+    if (settings.timer_mode) {
+        timer = new QTimer(this);
 
-    QStringList files =
-        FileScanner::scan(settings.input_path, settings.file_mask);
+        connect(timer, &QTimer::timeout, this, &Task::run_once);
 
-    for (QString file : files)
-    {
-        QFileInfo info(file);
+        timer->start(settings.scaner_interval * 1000);
 
-        QString output =
-            generate_output_name(info.fileName());
-
-        emit status("Processing " + info.fileName());
-
-        FileEncoder::encode(
-            file,
-            output,
-            settings.key,
-            [this](int p)
-            {
-                emit progress(p);
-            }
-        );
-
-        if (settings.delete_input)
-            QFile::remove(file);
+        status("Timer started");
     }
-
-    emit status("Finished");
-    emit finished();
+    else {
+        run_once();
+        emit finished();
+    }
 }
 
+void Task::run_once() {
+    status("Scanning files...");
 
+    auto files = FileScanner::scan(settings.input_path, settings.file_mask);
+
+    for (auto& file : files) {
+        QFileInfo info(file);
+
+        QString output = resolve_output(info.fileName());
+
+        emit status("Encoding " + info.fileName());
+
+        FileEncoder::encode(
+                file,
+                output,
+                settings.key,
+                [this](int p)
+                {
+                    emit progress(p);
+                });
+
+        if (settings.delete_input) {
+            QFile::remove(file);
+        }
+    }
+
+    emit status("Done");
+}
+
+QString Task::resolve_output(const QString& name) {
+    QString base = settings.output_path + "/" + name;
+
+    if (settings.action == AppSettings::FileAction::Overwrite)
+        return base;
+
+    QFileInfo info(base);
+
+    QString file = info.completeBaseName();
+    QString ext = info.suffix();
+
+    int counter = 1;
+
+    QString new_name;
+
+    do {
+        new_name = settings.output_path + "/" +
+                   file + "_" + QString::number(counter) +
+                   "." + ext;
+
+        counter++;
+
+    } while (QFile::exists(new_name));
+
+    return new_name;
+}
